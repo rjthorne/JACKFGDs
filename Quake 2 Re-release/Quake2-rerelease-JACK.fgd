@@ -5,6 +5,7 @@
 // Special thanks to: Disruptor, Zoid, Zaphod, Imaginos, EutecTic, xaGe.
 //
 // Last updated by Paril for re-release
+// Conversion to JACK/hammer format by rj
 
 // Includes stuff from the tools for lighting etc
 @include "Quake2-ericwtools-JACK.fgd" 

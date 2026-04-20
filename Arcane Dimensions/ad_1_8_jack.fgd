@@ -1,12 +1,10 @@
 
 //======================================================================
-// ENTITIES FGD file (Trenchbroom Only)
+// ENTITIES FGD file (JACK conversion)
 // 
 // MOD    : Arcane Dimensions v1.80
 // Date   : Sometime in 2020
 // Author : Dan "twitchy/damage_inc" Ellis & Benoit "Bal" Stordeur & Probably some other people before us!
-// Editor : Trenchbroom
-// Tools  : Ericw-Tools v0.18.1( https://ericwa.github.io/ericw-tools/ )
 //
 // Arcane Dimensions is a pretty huge mod with lots of new features, I'm sure there are some bugs
 // in this FGD file, or maybe some missing things. Please contact me (Bal) if you find anything that
@@ -70,6 +68,10 @@
 	_dist(integer) : "Global Light Scale" :  : "Scales the fade distance of all lights by a factor of 'n'. If 'n' is more than 1 lights fade more quickly with distance and if 'n' is less than 1, lights fade more slowly with distance and the light reaches further."
 	_gamma(integer) : "Lightmap gamma" :  : "Adjust brightness of the final lightmap. Default 1, >1 is brighter, <1 is darker."
 	_spotlightautofalloff(integer) : "Spotlight Falloff" :  : "When set to 1, spotlight falloff is calculated from the distance to the targeted 'info_null'. Ignored when '_falloff' is not 0. Default 0."
+	_surflight_radiosity(choices) : "Surface Light Radiosity" :  : "See ericwtools docs" = [
+		1 : "Q2 style radiosity"
+		0 : "Q1 style subdivide"
+	]
 
 //-------- SUN options --------
 
@@ -272,11 +274,11 @@
 @PointClass base(common) = ambient_thunder : "Thunder sound" []
 //_____Custom Sounds_____
 //setup base for custom sounds
-@baseclass base(targetname,AppearFlags) size(-16 -16 -8, 16 16 8) color(230 230 0) iconsprite("sprites/ambient_custom.spr") = CustomSound []
+@baseclass base(targetname,AppearFlags) size(-16 -16 -8, 16 16 8) color(230 230 0) iconsprite("sprites/speaker.spr") = CustomSound []
 
 //_____CUSTOM LOOP_____
 //Custom LOOP and WATER don't inherit anything as it's a "set it and forget it" entity
-@PointClass size(-16 -16 -8, 16 16 8) color(230 230 0) iconsprite("sprites/ambient_custom.spr") = ambient_custom_loop : "Ambient Custom Loop - Must be a 'looped' sound. Specifically, a '.wav' file with 'markers' placed in it by an Audio editing program(ex Wavosaur). By it's nature, you CANNOT toggle or switch it's state." [	
+@PointClass size(-16 -16 -8, 16 16 8) color(230 230 0) iconsprite("sprites/speaker.spr") = ambient_custom_loop : "Ambient Custom Loop - Must be a 'looped' sound. Specifically, a '.wav' file with 'markers' placed in it by an Audio editing program(ex Wavosaur). By it's nature, you CANNOT toggle or switch it's state." [	
 	volume(choices) : "Volume" :  : "Volume of sound (0.1->1,(default=1 (capped at 1)." = [
 		1.0 : "Full Volume(def)"
 		0.9 : "0.9"
@@ -292,7 +294,7 @@
 	noise(sound) : "Custom sound (looped)" :  : "Path/sound file to play (ex ambience/windgust1.wav)."
 ]
 //_____CUSTOM SOUND_____
-@PointClass base(AppearFlags,targetname) size(-16 -16 -8, 16 16 8) color(230 230 0) iconsprite("sprites/ambient_custom.spr") = ambient_custom_sound : "Ambient Custom Sound" [
+@PointClass base(AppearFlags,targetname) size(-16 -16 -8, 16 16 8) color(230 230 0) iconsprite("sprites/speaker.spr") = ambient_custom_sound : "Ambient Custom Sound" [
 	spawnflags(Flags) = [
 		2 : "Play Once" : 0 : "When triggered play only once"
 		//Patch2 addition
@@ -330,7 +332,7 @@
 	]
 ]
 //_____WATER_____
-@PointClass size(-16 -16 -8, 16 16 8) color(80 160 255) iconsprite("sprites/ambient_custom.spr") = ambient_custom_water : "Play a LOOPED Water Sound. See ambient_custom_loop for 'looping' information." [
+@PointClass size(-16 -16 -8, 16 16 8) color(80 160 255) iconsprite("sprites/speaker.spr") = ambient_custom_water : "Play a LOOPED Water Sound. See ambient_custom_loop for 'looping' information." [
 	volume(choices) : "Volume" :  : "Volume of Sound (default=.75)" = [
 		0.1 : "Barely Audible"
 		0.2 : "0.2"
@@ -775,10 +777,11 @@
 		"KEYPURPLE" : "KEYPURPLE - Purple"
 		"KEYWHITE" : "KEYWHITE - White"
 	]
+ skin(string) : "Model skin"
 ]
 //_____CUSTOM_____
-@PointClass base(Items,KeySize) = item_custom : "Custom Pickup Item" [
-	mdl(string) : "Model Selection (progs/model.mdl)"
+@PointClass base(Items,KeySize) studio() = item_custom : "Custom Pickup Item" [
+	mdl(studio) : "Model Selection (progs/model.mdl)"
 	netname(string) : "XXX Part of pickup string 'You got the XXX'"
 	noise(sound) : "Pickup Sound (def=weapons/lock4.wav)"
 	pos1(string) : "Pickup bounding box minimum (def=-16 -16 -24)"
@@ -893,7 +896,12 @@
 	netname(string) : "Override name of pickup"
 ]
 @PointClass base(Items,PowerupSize,PowerTimer) studio("progs/artifact_tome.mdl") = item_artifact_tomeofpower : "Tome of Power" [
-	worldtype(choices) : "Override model type" = [0 : "Use worldspawn" 1 : "Runic" 2 : "Base" 3 : "medieval"]
+	worldtype(choices) : "Override model type" = [
+		0 : "Use worldspawn"
+		1 : "Runic"
+		2 : "Base"
+		3 : "medieval"
+	]
 	netname(string) : "Override the name of the pickup"
 	]
 @PointClass base(Items,PowerupSize,PowerTimer) studio("progs/artifact_piercer.mdl") = item_artifact_nail_piercer : "Nail Piercer" [
@@ -1046,8 +1054,10 @@
 	_dirt(choices) : "Dirt Mapping (override)" :  : "-1 disables dirtmapping on the brush model. Useful if the BModel touches or sticks into the world, and you want to keep those areas from turning black. Default 0." = [
 	     0 : "Do Nothing"
 	    -1 : "Disable Dirt Mapping"
-	]		
+	]
+	_surflight_group(integer) : "Surface light group" :  : "Can be set to a nonzero value to make these brushes emit as surface lights only from a light template with a matching _surflight_group value."
 ]
+
 //_____func_button Settings_____
 @baseclass = FuncButtonSettings [
 	message(string) : "Message"
@@ -1055,7 +1065,7 @@
 	lip(integer) : "Lip (def=4)"
 	angle(integer) : "Direction" :  : "Determines the move direction, use 360 for angle 0)"
 	speed(integer) : "Speed (def=40)"
-	wait(integer) : "Wait before reset (def=1)"
+	wait(integer) : "Wait before reset (def=1)" : -1
 	delay(integer) : "Delay before trigger"
 	estate(choices) : "Override (starting entity state)" = [
 	    1 : "ON" 
@@ -1089,7 +1099,10 @@
     angle(integer) : "Direction" :  : "Determines the move direction, use 360 for angle 0)"
     speed(integer) : "Speed (def=100)"
 	yaw_speed(integer) : "Speed (returning)" 
-	wait(integer) : "Wait before close (def=3, -1 never return)"
+	wait(choices) : "Wait before close" = [
+		3 : "3 seconds"
+		-1 : "Stays open"
+	]
 	lip(integer) : "Lip (def=8)"
 	dmg(integer) : "Damage when blocked (def=2)"
 	sounds(choices) : "Sound" = [
@@ -1145,6 +1158,7 @@
 		8 : "Gold Key" : 0 : "Requires gold key to open"
         16: "Silver Key" : 0 : "Requires silver key to open"
         32: "Toggle" : 0 : "Door waits for trigger between states (if wait=-1 cannot be blocked)"
+        128: "No lip" : 0 : "I've had about enough of your lip sunshine"
 	]	
 	volume(integer) : "Volume for all custom sounds played (def=1, range=0-1)"
 ]
@@ -1444,32 +1458,6 @@
 		1 : "Disabled"
 	]
 ]
-//Patch2 addition | ON HOLD| light.exe issue, crashes if bouce lighting is enabled in worldspawn
-//_____FUNC SHADOW_____
-@SolidClass base(AppearFlags,targetname,target) = func_shadow : "An Invisible bmodel that casts shadows." [
-	spawnflags(flags) = [
-	    2 : "Fading" : 0 : "Will gradually fade over time (speed)"
-		64 : "Start OFF" : 0 : "Starts off, waits for trigger"
-	]
-	state(choices) : "Intended state to operate with (0=CLOSED, 1=OPEN)" = [
-		0 : "Closed"
-		1 : "Open"	
-	]
-	speed(integer) : "Fade in/out timer for the shadow (def=1s)"
-	_switchableshadow(choices) : "Toggle Shadow (MUST be 1)" : 1 : "ADVANCED - Set to 1, this BModel casts a shadow that can be switched on/off using QuakeC. To make this work, a lightstyle is automatically assigned and stored in a key called 'switchshadstyle', which the QuakeC will need to read and call the 'lightstyle() builtin' with an 'a' or 'm' to switch the shadow on or off. BModels sharing the same targetname, and with '_switchableshadow' set to 1, will share the same lightstyle." = [
-		0 : "Do Nothing"
-		1 : "Enabled"
-	]
-	_shadow(choices) : "Shadows (MUST be 1)" : 1 : "Set to 1, this model will cast shadows on the world, other BModels and itself. The use of '_shadow' intrinsically implies '_shadowself'. Set -1 on 'func_detail' and 'func_group' to prevent them from casting shadows. Default 0. NOTE - Shadows are STATIC and do NOT move with moving BModels." = [
-	   -1 : "Disable func_detail / func_group)" 
-	    0 : "Default"
-		1 : "Cast shadows"
-	]
-	_dirt(choices) : "Dirt Mapping (override)" :  : "-1 disables dirtmapping on the brush model. Useful if the BModel touches or sticks into the world, and you want to keep those areas from turning black. Default 0." = [
-	     0 : "Do Nothing"
-	    -1 : "Disable Dirt Mapping"
-	]	
-]
 
 //======================================================================
 //
@@ -1538,8 +1526,9 @@
 ]
 //Patch2 addition
 //----- Trigger Relay Settings_____
-@baseclass size(-8 -8 -8, 8 8 8) color(128 0 128) iconsprite("sprites/trigger_relay2.spr")= TriggerRelaySettings [
-    message(string) : "Message (on trigger)"
+@baseclass size(-8 -8 -8, 8 8 8) color(128 0 128) = TriggerRelaySettings [
+ killtarget(target_destination) : "Kill target"
+ message(string) : "Message (on trigger)"
 	wait(choices) : "Wait before reset" = [
 		-1 : "Trigger Once"
 		 0 : "Always reset"
@@ -2127,7 +2116,7 @@
 	noise(sound) : "Custom Sound - Triggered"
 ]
 //_____TRIGGER CD TRACK_____
-@PointClass base(targetname) size(-8 -8 -8, 8 8 8) color(200 128 0) iconsprite("sprites/cd_track.spr") = trigger_cdtrack : "Allows for CD/Music Track change to occur mid map. Suitable for ALL clients. Non CD external music tracks(.ogg/.mp3) are typically named with the format of: track01,  track02... track99 etc. Only the trailing numbers are required for 'Track Number'. NOTE - Quakespasm looks for music files in '... id1/music' while Darkplaces looks in '... id1/sound/cdtracks'. Using a Mod directory is also acceptable(ex '... ad/music' or '... ad/sound/cdtracks'." [
+@PointClass base(targetname) size(-8 -8 -8, 8 8 8) color(200 128 0) iconsprite("sprites/speaker.spr") = trigger_cdtrack : "Allows for CD/Music Track change to occur mid map. Suitable for ALL clients. Non CD external music tracks(.ogg/.mp3) are typically named with the format of: track01,  track02... track99 etc. Only the trailing numbers are required for 'Track Number'. NOTE - Quakespasm looks for music files in '... id1/music' while Darkplaces looks in '... id1/sound/cdtracks'. Using a Mod directory is also acceptable(ex '... ad/music' or '... ad/sound/cdtracks'." [
     count(integer) : "Track Number (ex 02->xx)" :  : "Number of the CD/Music Track to Play/Change to."
 ]
 //_____TRIGGER SKY BOX_____
@@ -2765,6 +2754,7 @@
 	spawnflags(Flags) = [
 		 2 : "Collison" : 0 : "Model bbox collision enabled"
 		 4 : "Moveable" : 0 : "Model can be moved around like an item"
+		 8 : "DropToFloor" : 0 : "Model will drop to floor"
 	   32 : "Static" : 0 : "Makes entity static upon spawn (frame 0)"
 	   64 : "Start OFF" : 0 : "Starts off, waits for trigger"
 	]
@@ -3245,6 +3235,8 @@
 	_surface_offset(integer) : "Surface light offset" :  : "Controls the offset lights are placed above surfaces for '_surface'. Default 2"
 
    _surface_spotlight(integer) : "Surface Spotlight" :  : "For a surface light template (i.e. a light with '_surface' set), setting this to 1 makes each instance into a spotlight, with the direction of light pointing along the surface normal. In other words, it automatically sets 'mangle' on each of the generated lights."
+   
+   _surflight_group(integer) : "Surface light group" :  : "Can be set to a nonzero value to make linked brushes emit as surface lights only from this light template"
 
     _project_texture(string) : "Project Texture(name)" :  : "Specifies that a light should project the named texture. The texture must be used in the map somewhere."
 
@@ -3424,10 +3416,11 @@
 	   32 : "Move Time" : 0 : "Interpret 'speed' as the length of time to take moving."
 	   64 : "Set Damage" : 0 : "Set all targets damage to 'dmg'."
 	]
-	event(target_destination)  : "Trigger target when train arrives at corner."
+	event(target_destination)  : "Trigger target when train LEAVES corner."
 	noise(sound)  : "Custom stop sound"
 	noise1(sound) : "Custom start sound"
 	speed(integer) : "Set speed of train"
+	wait(integer) : "Train pause time"
 ]
 //_____ROTATE TRAIN_____
 @PointClass base(AppearFlags, targetname, target) size(-8 -8 -8, 8 8 8) color(0 128 200) = func_rotate_train : "Rotating bmodel on path (controlled via path_rotate entities). This entity is moved along the path chain as the bmodel moves. Will start automatically if no targetname is defined" [
@@ -4005,6 +3998,7 @@ spawnflags(flags) = [
         4 : "Green" : 0  : "Green leather armour and increased HP."
 	] 	
 ]
+@PointClass base(MonWide) studio("progs/mon_ogrer.mdl") = monster_ogre_rocket : "Rocket ogre, 200 health points." []
 //_____Fishing OGRE needs some spawnflags and keys removed_____
 @PointClass base(MonWide) studio("progs/mon_ogrefish.mdl") = monster_ogre_fishing : "A Fishing Ogre, who knew! 150/350 health points." [
 	spawnflags(flags) = [ 4 : "Green Skin" : 0 : "Green leather armour and increased HP." ] 
@@ -4213,47 +4207,7 @@ spawnflags(flags) = [
 	    4 : "Asleep" : 0 : "Start OFF, unless shot or triggered"
 	]
 ]
-//Patch2 addition unfinished... closer!!!
-//_____BAL TURRET _____
-@baseclass = turretbal_unique [
 
-//----- turretbal unique-----
-	
-	t_length(integer) : "Axis  Restriction (horizontal)" : : "Axis restriction for ceiling/floor version"
-	t_width(integer)  : "Axis  Restriction (vertical)" : :  "Axis restriction for wall version"
-	attack_count(choices) : "Fire Rate" : : "-1 to disable increased fire rate" = [
-	 	 0 : "Default"
-	   -1 : "Decreased"
-	]
-	turretclosing(target_destination) : "Targets fired(closing)" :  : "target(s) fired when turret hides back wall/ceil/floor"
-	turretopening(target_destination) : "Targets fired(opening)" :  : "Target(s) fired when turret is coming out to play"
-	turretlocked(integer) : "Turret Locked (open)" :  : "Turret will not hide and remain in combat"
-	distance(integer) : "Receding Range (def=600)" : : "The range at which the turret will hide (def=600)"
-	waitmin3(integer) : "Startup Delay (def=2s)" : : "Time (def=2s) startup delay when spawning at start of map"
-	waitmin(integer) : "Closing Delay (def=2s)" : : "Time (def=2s) to pause before hiding if cannot see enemy"
-	waitmin2(integer) : "Opening Delay (def=2s)" : : "Time (def=2s) to wait hidden before coming out again"
-	wakeup_angle(integer) : "Wakeup Angle Lock (closed)" : : "Angle lock boundary adjustment when turret is closed"		
-]
-@PointClass base(turretbal_unique, p2_monsters) size(-20 -20 -20,20 20 20) color(192 0 192) studio("progs/mon_turretbal.mdl") = monster_turretbal : "Large surface mount turret, 180 health points." [
-	spawnflags(flags) = [
-		2 : "Triple" : 0 : "Fire triple shot vs single (powerful blast attack)"
-	    4 : "Plasma" : 0 : "Fire plasma bolts vs laser (high damage)"
-	]
-]
-//_____SWEEPER_____
-@PointClass base(p2_monsters) size(-16 -16 -24, 16 16 24)  color(192 0 192) studio("progs/mon_sweeper.mdl") = monster_sweeper : "Slow moving flying robot, 200 health points." [
-	spawnflags(flags) = [
-		2 : "Lasers" : 0
-		4 : "Shield" : 0]]
-		
-//_____PSYDER_____
-@PointClass base(p2_monsters) size(-32 -32 -48, 32 32 48)  color(192 0 192) studio("progs/mon_psyder.mdl") = monster_psyder : "Psychic / Psionic stationary dream node, 1200 health points." []
-
-//_____PHOBETOR_____
-//Patch2 addition
-//_____BARON_____
-@PointClass base(p2_monsters) size(-16 -16 -24, 16 16 40) color(192 192 0) studio("progs/mon_baron.mdl") = monster_baron : "The Baron - Mini Boss (1200 health points)." [
-]
 //_____DARK PRINCE_____
 @baseclass = dprince_unique [
 
@@ -4263,8 +4217,6 @@ spawnflags(flags) = [
 @PointClass base(dprince_unique,p2_monsters) size(-16 -16 -24, 16 16 40) color(192 64 0) studio("progs/mon_dprince.mdl") = monster_dprince : "Dark Prince, Mini Boss! (1200 health points)" [
 	spawnflags(flags) =[ 2 : "Fire Attack" : 0 : "Fire attack vs Plasma" ]	
 ]
-//_____MEGA ENFORCER____
-@PointClass base(p2_monsters) size(-16 -16 -24, 16 16 40) color(0 255 128) studio("progs/mon_megaforce.mdl") = monster_megaforce : "A Mega Enforcer, 400 health points." []
 //_____DEFLECTOR____
 @PointClass base(p2_monsters) size(-16 -16 -24, 16 16 40) color(0 255 128) studio("progs/mon_deflector.mdl") = monster_deflector : "The Deflector, 1200 health points." [
 	spawnflags(flags) = [ 2 : "Plasma" : 0 : "Plasma Deflector" ]
@@ -4275,8 +4227,6 @@ spawnflags(flags) = [
 	part_exitpuff(integer) : "When flame sprite is finished show puff of smoke (def=ON)"
 	part_exitsound(integer) : "Clear all sound channels when flame is finished (def=ON)"
 ]
-//_____MAMMOTH____
-@PointClass base(p2_monsters) size(-32 -32 -24,32 32 96) color(192 0 192) studio("progs/mon_mammoth1.mdl") = monster_mammoth : "Slow moving mini boss robot, 1200 health points." []
 //_____JUDICATOR + JUSTICE____
 @PointClass base(p2_monsters, JumpingMon) size(-32 -32 -24,32 32 64) color(192 0 192) studio("progs/mon_judge.mdl") = monster_judicator : "The Judicator, BOSS setup with multiple waves" [
 	spawnflags(flags) = [
@@ -4531,6 +4481,10 @@ spawnflags(flags) = [
 	waitmin(integer) : "Alpha Fade Time (def=1s) of bmodel (even if partial)"
 	lip(integer) : "Alpha Fade Direction -1=Down(1<-0), 1=Up(0->1), Def=UP"
 	delay(integer) : "Alpha Fade delay to start of fading (def=0)"
+    _mirrorinside(choices) : "Mirror Inside Face(s)" : 1 = [
+	    0 : "Do Nothing"
+	    1 : "Enabled"
+	]  
 ]
 //_____DETAIL_____
 @SolidClass base(FuncLighting) = func_detail : "Compiler entity only. Brushwork that does not seal the map or is structural. Detail brushes add visual details to the world but do NOT block visibility. 'func_detail' entities are merged into the worldspawn entity by the qbsp compiler and do not appear as separate entities in the compiled bsp. NOTE - While effecient use of detail brushes drastically cuts down on the more complex and larger levels, it is a good technique to develop early on. Especially as a time saver for later when your skills and ambitions will require it." []
